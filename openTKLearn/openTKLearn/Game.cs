@@ -8,35 +8,102 @@ namespace openTKLearn;
 
 public class Game : GameWindow
 {
-    private float[] vertices =
+    private List<Vector3> _vertices = new List<Vector3>()
     {
-        -0.5f, 0.5f, 0f,
-        0.5f, 0.5f, 0f,
-        0.5f, -0.5f, 0f,
-        -0.5f, -0.5f, 0f
+        new (-0.5f, 0.5f, 0.5f),
+        new (0.5f, 0.5f, 0.5f),
+        new (0.5f, -0.5f, 0.5f),
+        new (-0.5f, -0.5f, 0.5f),
+        
+        new (0.5f, 0.5f, 0.5f),
+        new (0.5f, 0.5f, -0.5f),
+        new (0.5f, -0.5f, -0.5f),
+        new (0.5f, -0.5f, 0.5f),
+        
+        new (0.5f, 0.5f, -0.5f),
+        new (-0.5f, 0.5f, -0.5f),
+        new (-0.5f, -0.5f, -0.5f),
+        new (0.5f, -0.5f, -0.5f),
+        
+        new (-0.5f, 0.5f, -0.5f),
+        new (-0.5f, 0.5f, 0.5f),
+        new (-0.5f, -0.5f, 0.5f),
+        new (-0.5f, -0.5f, -0.5f),
+
+        new (-0.5f, 0.5f, -0.5f),
+        new (0.5f, 0.5f, -0.5f),
+        new (0.5f, 0.5f, 0.5f),
+        new (-0.5f, 0.5f, 0.5f),
+
+        new (-0.5f, -0.5f, 0.5f),
+        new (0.5f, -0.5f, 0.5f),
+        new (0.5f, -0.5f, -0.5f),
+        new (-0.5f, -0.5f, -0.5f)
     };
 
-    private float[] texCoords =
+    private List<Vector2> _texCoords = new List<Vector2>()
     {
-        0f, 1f,
-        1f, 1f,
-        1f, 0f,
-        0f, 0f
+        new (0f, 1f),
+        new (1f, 1f),
+        new (1f, 0f),
+        new (0f, 0f),
+
+        new (0f, 1f),
+        new (1f, 1f),
+        new (1f, 0f),
+        new (0f, 0f),
+
+        new (0f, 1f),
+        new (1f, 1f),
+        new (1f, 0f),
+        new (0f, 0f),
+
+        new (0f, 1f),
+        new (1f, 1f),
+        new (1f, 0f),
+        new (0f, 0f),
+
+        new (0f, 1f),
+        new (1f, 1f),
+        new (1f, 0f),
+        new (0f, 0f),
+
+        new (0f, 1f),
+        new (1f, 1f),
+        new (1f, 0f),
+        new (0f, 0f),
     };
 
-    private uint[] indices =
+    private uint[] _indices =
     {
         0, 1, 2,
-        2, 3, 0
+        2, 3, 0,
+
+        4, 5, 6,
+        6, 7, 4,
+
+        8, 9, 10,
+        10, 11, 8,
+
+        12, 13, 14,
+        14, 15, 12,
+
+        16, 17, 18,
+        18, 19, 16,
+
+        20, 21, 22,
+        22, 23, 20
     };
 
-    private int vao;
-    private int shaderProgram;
-    private int vbo;
-    private int textureVBO;
-    private int ebo;
-    private int textureID;
+    private int _vao;
+    private int _shaderProgram;
+    private int _vbo;
+    private int _textureVBO;
+    private int _ebo;
+    private int _textureID;
     
+    private float _yRot;
+
     private int _width;
     private int _height;
     
@@ -44,7 +111,7 @@ public class Game : GameWindow
     {
         _width = width;
         _height = height;
-        
+
         CenterWindow(new Vector2i(width, height));
     }
     
@@ -60,35 +127,39 @@ public class Game : GameWindow
     {
         base.OnLoad();
 
-        vao = GL.GenVertexArray();
+        _vao = GL.GenVertexArray();
 
-        GL.BindVertexArray(vao);
+        GL.BindVertexArray(_vao);
 
-        vbo = GL.GenBuffer();
-        GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
-        GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length*sizeof(float), vertices, BufferUsageHint.StaticDraw);
+        _vbo = GL.GenBuffer();
+        GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
+        GL.BufferData(BufferTarget.ArrayBuffer, _vertices.Count * Vector3.SizeInBytes, _vertices.ToArray(), BufferUsageHint.StaticDraw);
         
+
         GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, 0);
-        GL.EnableVertexArrayAttrib(vao, 0);
+        GL.EnableVertexArrayAttrib(_vao, 0);
 
         GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 
-        textureVBO = GL.GenBuffer();
-        GL.BindBuffer(BufferTarget.ArrayBuffer, textureVBO);
-        GL.BufferData(BufferTarget.ArrayBuffer, texCoords.Length * sizeof(float), texCoords, BufferUsageHint.StaticDraw);
+        _textureVBO = GL.GenBuffer();
+        GL.BindBuffer(BufferTarget.ArrayBuffer, _textureVBO);
+        GL.BufferData(BufferTarget.ArrayBuffer, _texCoords.Count * Vector2.SizeInBytes, _texCoords.ToArray(), BufferUsageHint.StaticDraw);
         
+
         GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 0, 0);
-        GL.EnableVertexArrayAttrib(vao, 1);
+        GL.EnableVertexArrayAttrib(_vao, 1);
 
         GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 
         GL.BindVertexArray(0);
-        ebo = GL.GenBuffer();
-        GL.BindBuffer(BufferTarget.ElementArrayBuffer, ebo);
-        GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length*sizeof(uint), indices, BufferUsageHint.StaticDraw);
+
+        _ebo = GL.GenBuffer();
+        GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
+        GL.BufferData(BufferTarget.ElementArrayBuffer, _indices.Length*sizeof(uint), _indices, BufferUsageHint.StaticDraw);
         GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
 
-        shaderProgram = GL.CreateProgram();
+
+        _shaderProgram = GL.CreateProgram();
 
         var vertexShader = GL.CreateShader(ShaderType.VertexShader);
         GL.ShaderSource(vertexShader, LoadShaderSource("Default.vert")); 
@@ -98,17 +169,17 @@ public class Game : GameWindow
         GL.ShaderSource(fragmentShader, LoadShaderSource("Default.frag"));
         GL.CompileShader(fragmentShader);
 
-        GL.AttachShader(shaderProgram, vertexShader);
-        GL.AttachShader(shaderProgram, fragmentShader);
+        GL.AttachShader(_shaderProgram, vertexShader);
+        GL.AttachShader(_shaderProgram, fragmentShader);
 
-        GL.LinkProgram(shaderProgram);
+        GL.LinkProgram(_shaderProgram);
 
         GL.DeleteShader(vertexShader);
         GL.DeleteShader(fragmentShader);
 
-        textureID = GL.GenTexture();
+        _textureID = GL.GenTexture();
         GL.ActiveTexture(TextureUnit.Texture0);
-        GL.BindTexture(TextureTarget.Texture2D, textureID);
+        GL.BindTexture(TextureTarget.Texture2D, _textureID);
 
         GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
         GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
@@ -116,36 +187,57 @@ public class Game : GameWindow
         GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
 
         StbImage.stbi_set_flip_vertically_on_load(1);
-        var dirtTexture = ImageResult.FromStream(File.OpenRead(@"C:\Users\scr1m\learn-openTK\openTKLearn\openTKLearn\Textures\dirtTex.png"), ColorComponents.RedGreenBlueAlpha);
+        var dirtTexture = ImageResult.FromStream(File.OpenRead("../../../Textures/dirtTex.PNG"), ColorComponents.RedGreenBlueAlpha);
 
         GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, dirtTexture.Width, dirtTexture.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, dirtTexture.Data);
         GL.BindTexture(TextureTarget.Texture2D, 0);
+
+        GL.Enable(EnableCap.DepthTest);
     }
     
     protected override void OnUnload()
     {
         base.OnUnload();
 
-        GL.DeleteVertexArray(vao);
-        GL.DeleteBuffer(vbo);
-        GL.DeleteBuffer(ebo);
-        GL.DeleteTexture(textureID);
-        GL.DeleteProgram(shaderProgram);
+        GL.DeleteVertexArray(_vao);
+        GL.DeleteBuffer(_vbo);
+        GL.DeleteBuffer(_ebo);
+        GL.DeleteTexture(_textureID);
+        GL.DeleteProgram(_shaderProgram);
     }
     
     protected override void OnRenderFrame(FrameEventArgs args)
     {
         GL.ClearColor(0.3f, 0.3f, 1f, 1f);
-        GL.Clear(ClearBufferMask.ColorBufferBit);
+        GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
+        GL.UseProgram(_shaderProgram);
+        GL.BindVertexArray(_vao);
+        GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
 
-        GL.UseProgram(shaderProgram);
-        GL.BindVertexArray(vao);
-        GL.BindBuffer(BufferTarget.ElementArrayBuffer, ebo);
+        GL.BindTexture(TextureTarget.Texture2D, _textureID);
 
-        GL.BindTexture(TextureTarget.Texture2D, textureID);
+        var model = Matrix4.Identity;
+        var view = Matrix4.Identity;
+        var projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(60.0f), _width/_height, 0.1f, 100.0f);
+        
+        model = Matrix4.CreateRotationY(_yRot);
+        _yRot += 0.001f;
+        
+        var translation = Matrix4.CreateTranslation(0f, 0f, -3f);
 
-        GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
+        model *= translation;
+
+        var modelLocation = GL.GetUniformLocation(_shaderProgram, "model");
+        var viewLocation = GL.GetUniformLocation(_shaderProgram, "view");
+        var projectionLocation = GL.GetUniformLocation(_shaderProgram, "projection");
+
+        GL.UniformMatrix4(modelLocation, true, ref model);
+        GL.UniformMatrix4(viewLocation, true, ref view);
+        GL.UniformMatrix4(projectionLocation, true, ref projection);
+
+        GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
+
         Context.SwapBuffers();
 
         base.OnRenderFrame(args);
@@ -155,7 +247,7 @@ public class Game : GameWindow
     {
         base.OnUpdateFrame(args);
     }
-    
+
     public static string LoadShaderSource(string filePath)
     {
         var shaderSource = "";
@@ -171,7 +263,7 @@ public class Game : GameWindow
         {
             Console.WriteLine("Failed to load shader source file: " + e.Message);
         }
-        
+
         return shaderSource;
     }
 }
