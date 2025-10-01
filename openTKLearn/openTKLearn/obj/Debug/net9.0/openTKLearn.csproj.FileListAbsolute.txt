@@ -29,3 +29,4 @@ C:\Users\scr1m\learn-openTK\openTKLearn\openTKLearn\obj\Debug\net9.0\refint\open
 C:\Users\scr1m\learn-openTK\openTKLearn\openTKLearn\obj\Debug\net9.0\openTKLearn.pdb
 C:\Users\scr1m\learn-openTK\openTKLearn\openTKLearn\obj\Debug\net9.0\openTKLearn.genruntimeconfig.cache
 C:\Users\scr1m\learn-openTK\openTKLearn\openTKLearn\obj\Debug\net9.0\ref\openTKLearn.dll
+C:\Users\scr1m\learn-openTK\openTKLearn\openTKLearn\bin\Debug\net9.0\StbImageSharp.dll
