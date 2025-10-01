@@ -2,6 +2,7 @@
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using StbImageSharp;
 
 namespace openTKLearn;
@@ -14,30 +15,25 @@ public class Game : GameWindow
         new (0.5f, 0.5f, 0.5f),
         new (0.5f, -0.5f, 0.5f),
         new (-0.5f, -0.5f, 0.5f),
-        
         new (0.5f, 0.5f, 0.5f),
         new (0.5f, 0.5f, -0.5f),
         new (0.5f, -0.5f, -0.5f),
         new (0.5f, -0.5f, 0.5f),
-        
         new (0.5f, 0.5f, -0.5f),
         new (-0.5f, 0.5f, -0.5f),
         new (-0.5f, -0.5f, -0.5f),
         new (0.5f, -0.5f, -0.5f),
-        
         new (-0.5f, 0.5f, -0.5f),
         new (-0.5f, 0.5f, 0.5f),
         new (-0.5f, -0.5f, 0.5f),
         new (-0.5f, -0.5f, -0.5f),
-
         new (-0.5f, 0.5f, -0.5f),
         new (0.5f, 0.5f, -0.5f),
         new (0.5f, 0.5f, 0.5f),
         new (-0.5f, 0.5f, 0.5f),
-
         new (-0.5f, -0.5f, 0.5f),
         new (0.5f, -0.5f, 0.5f),
-        new (0.5f, -0.5f, -0.5f),
+        new (0.5f, -0.5f, -0.5f), 
         new (-0.5f, -0.5f, -0.5f)
     };
 
@@ -101,8 +97,10 @@ public class Game : GameWindow
     private int _textureVBO;
     private int _ebo;
     private int _textureID;
-    
-    private float _yRot;
+
+    private Camera _camera;
+
+    private float _yRot = 0f;
 
     private int _width;
     private int _height;
@@ -119,6 +117,7 @@ public class Game : GameWindow
     {
         base.OnResize(e);
         GL.Viewport(0,0, e.Width, e.Height);
+        
         _width = e.Width;
         _height = e.Height;
     }
@@ -135,7 +134,6 @@ public class Game : GameWindow
         GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
         GL.BufferData(BufferTarget.ArrayBuffer, _vertices.Count * Vector3.SizeInBytes, _vertices.ToArray(), BufferUsageHint.StaticDraw);
         
-
         GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, 0);
         GL.EnableVertexArrayAttrib(_vao, 0);
 
@@ -157,7 +155,6 @@ public class Game : GameWindow
         GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
         GL.BufferData(BufferTarget.ElementArrayBuffer, _indices.Length*sizeof(uint), _indices, BufferUsageHint.StaticDraw);
         GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
-
 
         _shaderProgram = GL.CreateProgram();
 
@@ -187,12 +184,16 @@ public class Game : GameWindow
         GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
 
         StbImage.stbi_set_flip_vertically_on_load(1);
+        
         var dirtTexture = ImageResult.FromStream(File.OpenRead("../../../Textures/dirtTex.PNG"), ColorComponents.RedGreenBlueAlpha);
 
         GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, dirtTexture.Width, dirtTexture.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, dirtTexture.Data);
         GL.BindTexture(TextureTarget.Texture2D, 0);
 
         GL.Enable(EnableCap.DepthTest);
+
+        _camera = new Camera(_width, _height, Vector3.Zero);
+        CursorState = CursorState.Grabbed;
     }
     
     protected override void OnUnload()
@@ -216,15 +217,16 @@ public class Game : GameWindow
         GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
 
         GL.BindTexture(TextureTarget.Texture2D, _textureID);
-
+        
         var model = Matrix4.Identity;
-        var view = Matrix4.Identity;
-        var projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(60.0f), _width/_height, 0.1f, 100.0f);
+        var view = _camera.GetViewMatrix();
+        var projection = _camera.GetProjectionMatrix();
+
         
         model = Matrix4.CreateRotationY(_yRot);
         _yRot += 0.001f;
-        
-        var translation = Matrix4.CreateTranslation(0f, 0f, -3f);
+
+        Matrix4 translation = Matrix4.CreateTranslation(0f, 0f, -3f);
 
         model *= translation;
 
@@ -237,7 +239,6 @@ public class Game : GameWindow
         GL.UniformMatrix4(projectionLocation, true, ref projection);
 
         GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
-
         Context.SwapBuffers();
 
         base.OnRenderFrame(args);
@@ -245,7 +246,11 @@ public class Game : GameWindow
     
     protected override void OnUpdateFrame(FrameEventArgs args)
     {
+        var mouse = MouseState;
+        var input = KeyboardState;
+
         base.OnUpdateFrame(args);
+        _camera.Update(input, mouse, args);
     }
 
     public static string LoadShaderSource(string filePath)
@@ -266,4 +271,5 @@ public class Game : GameWindow
 
         return shaderSource;
     }
+
 }
